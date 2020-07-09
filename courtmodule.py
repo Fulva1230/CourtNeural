@@ -11,7 +11,7 @@ class CourtNet(torch.nn.Module):
         for i in range(num_of_layer):
             output_size = max(int(input_size // 1.1), class_num)
             modules.append(torch.nn.Linear(input_size, output_size))
-            modules.append(torch.nn.ReLU())
+            modules.append(torch.nn.LeakyReLU(0.1))
             input_size = output_size
 
         modules.append(torch.nn.Linear(input_size, class_num))
