@@ -1,37 +1,24 @@
 import torch
 
 class CourtNet(torch.nn.Module):
-    def __init__(self, jurors, class_num):
+    def __init__(self, jurors, num_of_layer, class_num):
         super(CourtNet, self).__init__()
         self.jurors = jurors
         self.class_num = class_num
-        l1_output_size = class_num * len(jurors)
-        self.l1 = torch.nn.Linear(class_num * len(jurors), l1_output_size)
-        self.f1 = torch.nn.functional.leaky_relu
-        l2_output_size = max(int(l1_output_size // 1.2), class_num)
-        self.l2 = torch.nn.Linear(l1_output_size, l2_output_size)
-        self.f2 = torch.nn.functional.leaky_relu
 
-        l3_output_size = max(int(l2_output_size // 1.1), class_num)
-        self.l3 = torch.nn.Linear(l2_output_size, l3_output_size)
-        self.f3 = torch.nn.functional.sigmoid
+        input_size = class_num * len(jurors)
+        modules = []
+        for i in range(num_of_layer):
+            output_size = max(int(input_size // 1.1), class_num)
+            modules.append(torch.nn.Linear(input_size, output_size))
+            modules.append(torch.nn.ReLU)
+            input_size = output_size
 
-        l4_output_size = max(int(l3_output_size // 1.1), class_num)
-        self.l4 = torch.nn.Linear(l3_output_size, l4_output_size)
-        self.f4 = torch.nn.functional.logsigmoid
-
-        self.l5 = torch.nn.Linear(l4_output_size, class_num)
-
-        def finalf(input_tensor):
-            return torch.nn.functional.softmax(input_tensor, 1)
-        self.finalf = finalf
-        self.params1 = self.l1.parameters()
-        self.params2 = self.l2.parameters()
-        self.params3 = self.l3.parameters()
-        self.params4 = self.l4.parameters()
-        self.params5 = self.l5.parameters()
+        modules.append(torch.nn.Linear(input_size, class_num))
+        modules.append(torch.nn.Softmax(dim=1))
+        self.sequenceModule = torch.nn.Sequential(*modules)
 
 
     def forward(self, x):
         jurors_pred = torch.cat([juror(x) for juror in self.jurors], 1)
-        return self.finalf(self.l5(self.f4(self.l4(self.f3(self.l3(self.f2(self.l2(self.f1(self.l1(jurors_pred))))))))))
+        return self.sequenceModule(jurors_pred)
