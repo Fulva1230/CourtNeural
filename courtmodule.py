@@ -7,18 +7,18 @@ class CourtNet(torch.nn.Module):
         self.class_num = class_num
         l1_output_size = class_num * len(jurors)
         self.l1 = torch.nn.Linear(class_num * len(jurors), l1_output_size)
-        self.f1 = torch.nn.functional.relu
+        self.f1 = torch.nn.functional.leaky_relu
         l2_output_size = max(int(l1_output_size // 1.2), class_num)
         self.l2 = torch.nn.Linear(l1_output_size, l2_output_size)
-        self.f2 = torch.nn.functional.relu
+        self.f2 = torch.nn.functional.leaky_relu
 
         l3_output_size = max(int(l2_output_size // 1.1), class_num)
         self.l3 = torch.nn.Linear(l2_output_size, l3_output_size)
-        self.f3 = torch.nn.functional.leaky_relu
+        self.f3 = torch.nn.functional.sigmoid
 
         l4_output_size = max(int(l3_output_size // 1.1), class_num)
         self.l4 = torch.nn.Linear(l3_output_size, l4_output_size)
-        self.f4 = torch.nn.functional.leaky_relu
+        self.f4 = torch.nn.functional.logsigmoid
 
         self.l5 = torch.nn.Linear(l4_output_size, class_num)
 
