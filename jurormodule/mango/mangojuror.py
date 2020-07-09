@@ -14,4 +14,4 @@ class MangoJuror(torch.nn.Module):
         confi = cateAndConfi[:, 3:]
         cateSoft = torch.nn.functional.softmax(cate, dim=1)
         confiSoft = torch.nn.functional.softmax(confi, dim=1)
-        return torch.cat(cateSoft, confiSoft)
+        return torch.cat((cateSoft, confiSoft))
